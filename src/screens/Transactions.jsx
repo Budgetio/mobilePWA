@@ -1,24 +1,25 @@
 import { useMemo, useState } from 'react'
 import { Search, SlidersHorizontal, Inbox } from 'lucide-react'
 import { useStore } from '../store/StoreProvider.jsx'
-import { transactionsForMonth, totals } from '../lib/recurrence.js'
+import { transactionsInRange, totals } from '../lib/recurrence.js'
+import { periodRange } from '../lib/period.js'
 import { categoryById } from '../lib/categories.js'
 import { formatMoney } from '../lib/format.js'
 import { ScreenHeader, Segmented, EmptyState } from '../components/ui.jsx'
-import MonthNav from '../components/MonthNav.jsx'
+import PeriodNav from '../components/PeriodNav.jsx'
 import TransactionRow from '../components/TransactionRow.jsx'
 import Dropdown from '../components/Dropdown.jsx'
 
-export default function Transactions({ year, month, setMonth, onEdit }) {
+export default function Transactions({ period, setPeriod, onEdit }) {
   const { state, categoryMap, activeBudget, setActiveBudget } = useStore()
   const [query, setQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [typeFilter, setTypeFilter] = useState('all')
 
-  const monthOcc = useMemo(
-    () => transactionsForMonth(state.transactions, activeBudget.id, year, month),
-    [state.transactions, activeBudget.id, year, month]
-  )
+  const monthOcc = useMemo(() => {
+    const { from, to } = periodRange(period)
+    return transactionsInRange(state.transactions, activeBudget.id, from, to)
+  }, [state.transactions, activeBudget.id, period])
 
   const sums = useMemo(() => totals(monthOcc), [monthOcc])
 
@@ -110,9 +111,9 @@ export default function Transactions({ year, month, setMonth, onEdit }) {
         </div>
       )}
 
-      {/* Měsíc */}
+      {/* Období */}
       <div className="mb-2">
-        <MonthNav year={year} month={month} onChange={setMonth} variant="arrowsOutside" />
+        <PeriodNav period={period} onChange={setPeriod} variant="arrowsOutside" />
       </div>
       <div className="text-right text-sm text-ink-mute mb-3">
         {filtered.length}{' '}

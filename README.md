@@ -21,19 +21,21 @@ npm run preview      # náhled produkčního buildu
 > Produkční `dist/` se musí servírovat přes HTTP (ne otevírat přes `file://`).
 > Pro rychlé otevření bez serveru použij `BUDGETO-nahled.html`.
 
-## Co je hotové (Fáze 1)
+## Co je hotové (Fáze 1 + 2)
 
 - **Datová vrstva + localStorage** — rozpočty, hierarchické kategorie, štítky, transakce; data přežijí zavření appky.
 - **Více rozpočtů** — Osobní / Rodinný / Firemní, přepínání v hlavičce.
-- **Transakce** — souhrnné karty (příjmy/výdaje), vyhledávání, přepínač měsíce, seznam s ikonami; plánované (budoucí) položky zešednou.
+- **Výběr období** — kliknutím na název období (v Přehledu, Transakcích i Statistikách) lze zvolit rychlou předvolbu (tento/minulý měsíc, tento/minulý rok, posledních 30/90 dní) nebo **vlastní rozsah od–do** (např. celý loňský rok nebo od 15. do 15.). Šipky listují po měsících, u vlastního rozsahu o jeho délku. Grafy se přizpůsobí délce období (dny/týdny/měsíce).
+- **Transakce** — souhrnné karty (příjmy/výdaje), vyhledávání, výběr období, seznam s ikonami; plánované (budoucí) položky zešednou.
 - **Přidat / upravit transakci** — Výdaj/Příjem, částka, datum, kategorie, štítky, poznámka a **opakování** (měsíčně se začátkem/koncem). Mazání transakcí.
 - **Přehled** — zůstatek/příjmy/výdaje, graf peněžního toku, plánované výdaje, týdenní změny a dva koláčové grafy (výdaje/příjmy dle kategorie).
+- **Statistiky** — výdaje dle kategorie (proužky), Příjmy vs Výdaje za 6 měsíců, měsíční přehled s úsporami a mírou úspor.
+- **Kategorie** — správa stromu: rozbalování, vyhledávání, přidání kategorie i **podkategorie** (dialog), přejmenování a mazání (včetně podstromu). Dostupné přes ozubené kolo ve Statistikách nebo „Spravovat" u kategorie v Přidat transakci.
 - Demo data se generují relativně k dnešnímu dni, aby grafy i plánované položky dávaly smysl.
 
 ## Co přijde dál
 
-- **Fáze 2** — obrazovka Statistiky a správa stromu Kategorií.
-- **Fáze 3** — pokročilé Filtry, Profil (štítky), doladění PWA (offline, instalace na plochu, ikony).
+- **Fáze 3** — pokročilé Filtry, Profil (štítky, reset dat), doladění PWA (offline, instalace na plochu, ikony) a doporučený JSON export/import zálohy.
 
 ## Struktura
 

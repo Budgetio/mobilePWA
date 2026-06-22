@@ -30,7 +30,7 @@ const Label = ({ children }) => (
 const field =
   'w-full h-12 px-4 rounded-2xl bg-card border border-line outline-none text-ink placeholder:text-ink-mute'
 
-export default function AddTransaction({ editing, defaultBudgetId, onClose }) {
+export default function AddTransaction({ editing, defaultBudgetId, onClose, onManageCategories }) {
   const { state, addTransaction, updateTransaction, deleteTransaction } = useStore()
   const base = editing || null
 
@@ -209,7 +209,14 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose }) {
         )}
 
         <div>
-          <Label>Kategorie</Label>
+          <div className="flex items-center justify-between mb-1.5">
+            <Label>Kategorie</Label>
+            {onManageCategories && (
+              <button type="button" onClick={onManageCategories} className="text-sm font-semibold text-accent-dark">
+                Spravovat
+              </button>
+            )}
+          </div>
           <Dropdown
             value={categoryId}
             options={catOptions}

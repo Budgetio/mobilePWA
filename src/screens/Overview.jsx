@@ -5,11 +5,13 @@ import {
 } from 'recharts'
 import { Bell, Wallet, TrendingUp, TrendingDown, Clock } from 'lucide-react'
 import { useStore } from '../store/StoreProvider.jsx'
-import { transactionsForMonth, totals } from '../lib/recurrence.js'
+import { transactionsInRange, totals } from '../lib/recurrence.js'
+import { periodRange } from '../lib/period.js'
+import { bucketize, aggregateByBucket, cumulative, tickInterval } from '../lib/analytics.js'
 import { rootCategory, categoryById } from '../lib/categories.js'
 import { formatMoney, formatSigned, formatDate } from '../lib/format.js'
 import { Card, SectionTitle } from '../components/ui.jsx'
-import MonthNav from '../components/MonthNav.jsx'
+import PeriodNav from '../components/PeriodNav.jsx'
 import Dropdown from '../components/Dropdown.jsx'
 
 const compact = (n) => {
@@ -65,53 +67,26 @@ function Donut({ title, data }) {
   )
 }
 
-export default function Overview({ year, month, setMonth, onEdit }) {
+export default function Overview({ period, setPeriod, onEdit }) {
   const { state, categoryMap, activeBudget, setActiveBudget } = useStore()
 
-  const monthOcc = useMemo(
-    () => transactionsForMonth(state.transactions, activeBudget.id, year, month),
-    [state.transactions, activeBudget.id, year, month]
-  )
+  const monthOcc = useMemo(() => {
+    const { from, to } = periodRange(period)
+    return transactionsInRange(state.transactions, activeBudget.id, from, to)
+  }, [state.transactions, activeBudget.id, period])
   const sums = useMemo(() => totals(monthOcc), [monthOcc])
 
-  // Peněžní tok – kumulativní příjmy a výdaje po dnech
+  // Peněžní tok – kumulativní příjmy a výdaje (jemné koše)
   const cashflow = useMemo(() => {
-    const days = new Date(year, month + 1, 0).getDate()
-    const arr = []
-    let ci = 0
-    let ce = 0
-    const byDay = {}
-    for (const o of monthOcc) {
-      const d = Number(o.date.split('-')[2])
-      byDay[d] ||= { i: 0, e: 0 }
-      if (o.type === 'income') byDay[d].i += o.amount
-      else byDay[d].e += o.amount
-    }
-    for (let d = 1; d <= days; d++) {
-      ci += byDay[d]?.i || 0
-      ce += byDay[d]?.e || 0
-      arr.push({ den: d, Příjmy: ci, Výdaje: ce })
-    }
-    return arr
-  }, [monthOcc, year, month])
+    const { from, to } = periodRange(period)
+    return cumulative(aggregateByBucket(monthOcc, bucketize(from, to)))
+  }, [monthOcc, period])
 
-  // Změny – po týdnech
+  // Změny – po koších (hrubší dělení)
   const weekly = useMemo(() => {
-    const buckets = [
-      { label: '1.–7.', lo: 1, hi: 7, Příjmy: 0, Výdaje: 0 },
-      { label: '8.–14.', lo: 8, hi: 14, Příjmy: 0, Výdaje: 0 },
-      { label: '15.–21.', lo: 15, hi: 21, Příjmy: 0, Výdaje: 0 },
-      { label: '22.+', lo: 22, hi: 31, Příjmy: 0, Výdaje: 0 },
-    ]
-    for (const o of monthOcc) {
-      const d = Number(o.date.split('-')[2])
-      const b = buckets.find((x) => d >= x.lo && d <= x.hi)
-      if (!b) continue
-      if (o.type === 'income') b.Příjmy += o.amount
-      else b.Výdaje += o.amount
-    }
-    return buckets
-  }, [monthOcc])
+    const { from, to } = periodRange(period)
+    return aggregateByBucket(monthOcc, bucketize(from, to, { coarse: true }))
+  }, [monthOcc, period])
 
   const planned = useMemo(
     () => monthOcc.filter((o) => o.planned && o.type === 'expense').sort((a, b) => (a.date < b.date ? -1 : 1)),
@@ -140,7 +115,7 @@ export default function Overview({ year, month, setMonth, onEdit }) {
 
       <div className="flex items-center gap-2 mb-4">
         <div className="flex-1">
-          <MonthNav year={year} month={month} onChange={setMonth} variant="boxed" />
+          <PeriodNav period={period} onChange={setPeriod} variant="boxed" />
         </div>
         <div className="w-32">
           <Dropdown value={activeBudget.id} options={budgetOptions} onChange={setActiveBudget} />
@@ -178,9 +153,9 @@ export default function Overview({ year, month, setMonth, onEdit }) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={cashflow} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F2" vertical={false} />
-              <XAxis dataKey="den" tick={{ fontSize: 11, fill: '#9AA0A8' }} interval={6} tickLine={false} axisLine={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9AA0A8' }} interval={tickInterval(cashflow.length)} tickLine={false} axisLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#9AA0A8' }} tickFormatter={compact} tickLine={false} axisLine={false} width={42} />
-              <Tooltip formatter={(v) => formatMoney(v)} labelFormatter={(d) => `${d}. den`} />
+              <Tooltip formatter={(v) => formatMoney(v)} />
               <Line type="monotone" dataKey="Příjmy" stroke="#16A34A" strokeWidth={2.5} dot={false} />
               <Line type="monotone" dataKey="Výdaje" stroke="#DC2626" strokeWidth={2.5} dot={false} />
             </LineChart>
@@ -232,7 +207,7 @@ export default function Overview({ year, month, setMonth, onEdit }) {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={weekly} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F2" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9AA0A8' }} tickLine={false} axisLine={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9AA0A8' }} tickLine={false} axisLine={false} interval={tickInterval(weekly.length, 7)} />
               <YAxis tick={{ fontSize: 11, fill: '#9AA0A8' }} tickFormatter={compact} tickLine={false} axisLine={false} width={42} />
               <Tooltip formatter={(v) => formatMoney(v)} cursor={{ fill: '#F4F4F7' }} />
               <Bar dataKey="Příjmy" fill="#16A34A" radius={[4, 4, 0, 0]} />

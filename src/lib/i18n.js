@@ -133,6 +133,14 @@ const DICT = {
     'pp.thisYear': 'Tento rok',
     'pp.lastYear': 'Minulý rok',
     'period.year': 'Rok {year}',
+
+    'update.available': 'Je k dispozici nová verze',
+    'update.button': 'Aktualizovat',
+    'update.check': 'Zkontrolovat aktualizace',
+    'update.checking': 'Kontroluji…',
+    'update.upToDate': 'Máte nejnovější verzi.',
+    'update.unsupported': 'Aktualizace jsou dostupné jen v nainstalované aplikaci.',
+    'p.version': 'Verze',
   },
 
   en: {
@@ -267,6 +275,14 @@ const DICT = {
     'pp.thisYear': 'This year',
     'pp.lastYear': 'Last year',
     'period.year': 'Year {year}',
+
+    'update.available': 'A new version is available',
+    'update.button': 'Update',
+    'update.check': 'Check for updates',
+    'update.checking': 'Checking…',
+    'update.upToDate': "You're on the latest version.",
+    'update.unsupported': 'Updates are available only in the installed app.',
+    'p.version': 'Version',
   },
 }
 

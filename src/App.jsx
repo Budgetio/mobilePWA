@@ -7,6 +7,7 @@ import Statistics from './screens/Statistics.jsx'
 import Categories from './screens/Categories.jsx'
 import Profile from './screens/Profile.jsx'
 import AddTransaction from './screens/AddTransaction.jsx'
+import UpdateBanner from './components/UpdateBanner.jsx'
 import { useStore } from './store/StoreProvider.jsx'
 import { monthPeriod } from './lib/period.js'
 
@@ -39,6 +40,7 @@ export default function App() {
       bottomNav={<BottomNav active={tab} onChange={setTab} onAdd={openAdd} />}
       overlay={
         <>
+          <UpdateBanner />
           {add && (
             <AddTransaction
               editing={add.editing}

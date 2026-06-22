@@ -30,6 +30,10 @@ Produkční build (`dist/`) je plnohodnotná PWA – funguje offline a jde nains
 
 > Service worker a instalace fungují jen přes http(s), ne přes `file://`. Pro rychlý náhled bez serveru slouží `BUDGETO-nahled.html`.
 
+### Aktualizace bez přeinstalování
+
+Po nasazení nové verze (nahrání nového `dist/`) se appka **nemusí odinstalovávat**. Nainstalovaná aplikace novou verzi sama rozpozná a nahoře ukáže lištu „Je k dispozici nová verze" s tlačítkem **Aktualizovat**, které ji načte. Ručně lze aktualizaci vyvolat v **Profil → Zkontrolovat aktualizace**. Verze (čas buildu) je vidět dole v Profilu.
+
 ## Co je hotové (Fáze 1–3)
 
 - **Datová vrstva + localStorage** — rozpočty, hierarchické kategorie, štítky, transakce; data přežijí zavření appky.

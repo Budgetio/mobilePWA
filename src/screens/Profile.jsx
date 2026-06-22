@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   Settings, Globe, Tag, Pencil, Trash2, Plus, Download, Upload, Database,
-  Grid3x3, RotateCcw, Smartphone, Check,
+  Grid3x3, RotateCcw, RefreshCw, Smartphone, Check,
 } from 'lucide-react'
 import { useStore } from '../store/StoreProvider.jsx'
 import { Card } from '../components/ui.jsx'
@@ -9,6 +9,7 @@ import Modal from '../components/Modal.jsx'
 import Dropdown from '../components/Dropdown.jsx'
 import { downloadJSON, readBackupFile } from '../lib/backup.js'
 import { LANGUAGES } from '../lib/i18n.js'
+import { checkForUpdate } from '../lib/pwa.js'
 
 function initials(name) {
   return (name || '?')
@@ -82,6 +83,14 @@ export default function Profile({ onOpenCategories }) {
     installEvt.prompt()
     await installEvt.userChoice
     setInstallEvt(null)
+  }
+
+  const onCheckUpdate = async () => {
+    flash(t('update.checking'))
+    const res = await checkForUpdate()
+    if (res === 'available') flash(t('update.available'))
+    else if (res === 'uptodate') flash(t('update.upToDate'))
+    else flash(t('update.unsupported'))
   }
 
   const SettingsRow = ({ icon, label, onClick, danger }) => (
@@ -171,6 +180,7 @@ export default function Profile({ onOpenCategories }) {
       {/* Nastavení */}
       <Card className="mb-4 overflow-hidden divide-y divide-line">
         <SettingsRow icon={<Grid3x3 size={20} />} label={t('p.manageCategories')} onClick={onOpenCategories} />
+        <SettingsRow icon={<RefreshCw size={20} />} label={t('update.check')} onClick={onCheckUpdate} />
         {installEvt && <SettingsRow icon={<Smartphone size={20} />} label={t('p.install')} onClick={install} />}
       </Card>
 
@@ -225,6 +235,10 @@ export default function Profile({ onOpenCategories }) {
       >
         <RotateCcw size={18} /> {t('p.resetData')}
       </button>
+
+      <p className="text-center text-xs text-ink-mute mt-4 mb-2">
+        BUDGETO · {t('p.version')} {__BUILD_TIME__}
+      </p>
 
       {/* Dialog úpravy profilu */}
       <Modal open={editProfile} onClose={() => setEditProfile(false)} title={t('p.editProfile')}>

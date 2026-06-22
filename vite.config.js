@@ -5,11 +5,15 @@ import { VitePWA } from 'vite-plugin-pwa'
 // Base './' zajišťuje, že build funguje i z podsložky / statického hostingu.
 export default defineConfig({
   base: './',
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')),
+  },
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // 'prompt' = novou verzi aplikujeme až po potvrzení uživatelem (tlačítko v appce).
+      registerType: 'prompt',
+      injectRegister: false, // registraci řešíme sami v src/lib/pwa.js
       includeAssets: ['favicon-32.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'BUDGETO',
@@ -31,6 +35,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
         navigateFallback: 'index.html',
+        cleanupOutdatedCaches: true,
       },
     }),
   ],

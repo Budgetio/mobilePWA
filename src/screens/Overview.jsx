@@ -1,0 +1,252 @@
+import { useMemo } from 'react'
+import {
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar, PieChart, Pie, Cell, Legend,
+} from 'recharts'
+import { Bell, Wallet, TrendingUp, TrendingDown, Clock } from 'lucide-react'
+import { useStore } from '../store/StoreProvider.jsx'
+import { transactionsForMonth, totals } from '../lib/recurrence.js'
+import { rootCategory, categoryById } from '../lib/categories.js'
+import { formatMoney, formatSigned, formatDate } from '../lib/format.js'
+import { Card, SectionTitle } from '../components/ui.jsx'
+import MonthNav from '../components/MonthNav.jsx'
+import Dropdown from '../components/Dropdown.jsx'
+
+const compact = (n) => {
+  const abs = Math.abs(n)
+  if (abs >= 1000) return `${Math.round(n / 1000)}k`
+  return String(n)
+}
+
+function groupByRoot(occ, map) {
+  const acc = {}
+  for (const o of occ) {
+    const root = rootCategory(map, o.categoryId)
+    const key = root ? root.id : 'jine'
+    if (!acc[key])
+      acc[key] = { name: root ? root.name : 'Ostatní', color: root ? root.color : '#94A3B8', value: 0 }
+    acc[key].value += o.amount
+  }
+  return Object.values(acc).sort((a, b) => b.value - a.value)
+}
+
+function Donut({ title, data }) {
+  const total = data.reduce((s, d) => s + d.value, 0)
+  return (
+    <Card className="p-4 flex-1">
+      <h3 className="font-bold text-ink mb-2">{title}</h3>
+      {total === 0 ? (
+        <p className="text-sm text-ink-mute py-8 text-center">Žádná data</p>
+      ) : (
+        <>
+          <div className="h-32">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data} dataKey="value" innerRadius={34} outerRadius={56} paddingAngle={2} stroke="none">
+                  {data.map((d, i) => (
+                    <Cell key={i} fill={d.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-2 space-y-1">
+            {data.slice(0, 4).map((d, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
+                <span className="text-ink-soft truncate flex-1">{d.name}</span>
+                <span className="text-ink-mute">{Math.round((d.value / total) * 100)}%</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </Card>
+  )
+}
+
+export default function Overview({ year, month, setMonth, onEdit }) {
+  const { state, categoryMap, activeBudget, setActiveBudget } = useStore()
+
+  const monthOcc = useMemo(
+    () => transactionsForMonth(state.transactions, activeBudget.id, year, month),
+    [state.transactions, activeBudget.id, year, month]
+  )
+  const sums = useMemo(() => totals(monthOcc), [monthOcc])
+
+  // Peněžní tok – kumulativní příjmy a výdaje po dnech
+  const cashflow = useMemo(() => {
+    const days = new Date(year, month + 1, 0).getDate()
+    const arr = []
+    let ci = 0
+    let ce = 0
+    const byDay = {}
+    for (const o of monthOcc) {
+      const d = Number(o.date.split('-')[2])
+      byDay[d] ||= { i: 0, e: 0 }
+      if (o.type === 'income') byDay[d].i += o.amount
+      else byDay[d].e += o.amount
+    }
+    for (let d = 1; d <= days; d++) {
+      ci += byDay[d]?.i || 0
+      ce += byDay[d]?.e || 0
+      arr.push({ den: d, Příjmy: ci, Výdaje: ce })
+    }
+    return arr
+  }, [monthOcc, year, month])
+
+  // Změny – po týdnech
+  const weekly = useMemo(() => {
+    const buckets = [
+      { label: '1.–7.', lo: 1, hi: 7, Příjmy: 0, Výdaje: 0 },
+      { label: '8.–14.', lo: 8, hi: 14, Příjmy: 0, Výdaje: 0 },
+      { label: '15.–21.', lo: 15, hi: 21, Příjmy: 0, Výdaje: 0 },
+      { label: '22.+', lo: 22, hi: 31, Příjmy: 0, Výdaje: 0 },
+    ]
+    for (const o of monthOcc) {
+      const d = Number(o.date.split('-')[2])
+      const b = buckets.find((x) => d >= x.lo && d <= x.hi)
+      if (!b) continue
+      if (o.type === 'income') b.Příjmy += o.amount
+      else b.Výdaje += o.amount
+    }
+    return buckets
+  }, [monthOcc])
+
+  const planned = useMemo(
+    () => monthOcc.filter((o) => o.planned && o.type === 'expense').sort((a, b) => (a.date < b.date ? -1 : 1)),
+    [monthOcc]
+  )
+
+  const expenseByCat = useMemo(
+    () => groupByRoot(monthOcc.filter((o) => o.type === 'expense'), categoryMap),
+    [monthOcc, categoryMap]
+  )
+  const incomeByCat = useMemo(
+    () => groupByRoot(monthOcc.filter((o) => o.type === 'income'), categoryMap),
+    [monthOcc, categoryMap]
+  )
+
+  const budgetOptions = state.budgets.map((b) => ({ value: b.id, label: b.name }))
+
+  return (
+    <div className="px-5">
+      <div className="flex items-center justify-between px-0 pt-2 pb-4">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink">Přehled</h1>
+        <button className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft" aria-label="Oznámení">
+          <Bell size={22} />
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex-1">
+          <MonthNav year={year} month={month} onChange={setMonth} variant="boxed" />
+        </div>
+        <div className="w-32">
+          <Dropdown value={activeBudget.id} options={budgetOptions} onChange={setActiveBudget} />
+        </div>
+      </div>
+
+      {/* Souhrnné karty */}
+      <div className="grid grid-cols-3 gap-2.5 mb-4">
+        <Card className="p-3">
+          <div className="flex items-center gap-1 text-ink-soft text-xs mb-1">
+            <Wallet size={14} /> Zůstatek
+          </div>
+          <div className={'text-base font-extrabold ' + (sums.balance < 0 ? 'text-expense' : 'text-ink')}>
+            {formatMoney(sums.balance)}
+          </div>
+        </Card>
+        <Card className="p-3">
+          <div className="flex items-center gap-1 text-income text-xs mb-1">
+            <TrendingUp size={14} /> Příjmy
+          </div>
+          <div className="text-base font-extrabold text-income">{formatMoney(sums.income)}</div>
+        </Card>
+        <Card className="p-3">
+          <div className="flex items-center gap-1 text-expense text-xs mb-1">
+            <TrendingDown size={14} /> Výdaje
+          </div>
+          <div className="text-base font-extrabold text-expense">{formatMoney(sums.expense)}</div>
+        </Card>
+      </div>
+
+      {/* Peněžní tok */}
+      <Card className="p-4 mb-4">
+        <SectionTitle>Peněžní tok</SectionTitle>
+        <div className="h-44">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={cashflow} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F2" vertical={false} />
+              <XAxis dataKey="den" tick={{ fontSize: 11, fill: '#9AA0A8' }} interval={6} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#9AA0A8' }} tickFormatter={compact} tickLine={false} axisLine={false} width={42} />
+              <Tooltip formatter={(v) => formatMoney(v)} labelFormatter={(d) => `${d}. den`} />
+              <Line type="monotone" dataKey="Příjmy" stroke="#16A34A" strokeWidth={2.5} dot={false} />
+              <Line type="monotone" dataKey="Výdaje" stroke="#DC2626" strokeWidth={2.5} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex items-center gap-4 mt-2 text-sm">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-income" /> Příjmy</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-expense" /> Výdaje</span>
+        </div>
+      </Card>
+
+      {/* Plánované výdaje */}
+      <div className="mb-4">
+        <SectionTitle>Plánované výdaje</SectionTitle>
+        {planned.length === 0 ? (
+          <Card className="p-4 text-sm text-ink-mute text-center">Žádné plánované výdaje v tomto měsíci.</Card>
+        ) : (
+          <div className="space-y-2.5">
+            {planned.slice(0, 5).map((o) => {
+              const cat = categoryById(categoryMap, o.categoryId)
+              return (
+                <button
+                  key={o.occId}
+                  onClick={() => onEdit && onEdit(o)}
+                  className="w-full text-left bg-card rounded-2xl shadow-card px-3 py-3 flex items-center gap-3 opacity-90"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-line-soft flex items-center justify-center text-ink-mute flex-shrink-0">
+                    <Clock size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-ink truncate">{o.name}</div>
+                    <div className="text-sm text-ink-mute">{formatDate(o.date)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-ink-soft">{formatSigned('expense', o.amount)}</div>
+                    <div className="text-sm text-ink-mute">{cat?.name || '—'}</div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Změny */}
+      <Card className="p-4 mb-4">
+        <SectionTitle>Změny</SectionTitle>
+        <div className="h-44">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={weekly} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F2" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9AA0A8' }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#9AA0A8' }} tickFormatter={compact} tickLine={false} axisLine={false} width={42} />
+              <Tooltip formatter={(v) => formatMoney(v)} cursor={{ fill: '#F4F4F7' }} />
+              <Bar dataKey="Příjmy" fill="#16A34A" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Výdaje" fill="#DC2626" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Donuty */}
+      <div className="flex gap-3 mb-2">
+        <Donut title="Výdaje" data={expenseByCat} />
+        <Donut title="Příjmy" data={incomeByCat} />
+      </div>
+    </div>
+  )
+}

@@ -136,7 +136,7 @@ export default function Categories({ onClose, selectedId, onPick }) {
   const roots = childrenByParent['root'] || []
 
   return (
-    <div className="absolute inset-0 z-40 bg-bg flex flex-col">
+    <div className="absolute inset-0 z-40 bg-bg flex flex-col pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-2 px-5 pt-4 pb-3">
         <button onClick={onClose} className="w-9 h-9 -ml-1 flex items-center justify-center text-ink">
           <ChevronLeft size={26} />

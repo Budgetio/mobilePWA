@@ -42,7 +42,7 @@ export default function BottomNav({ active, onChange, onAdd }) {
 
   return (
     <div className="absolute bottom-0 inset-x-0 z-30">
-      <div className="mx-3 mb-3 bg-card rounded-full shadow-[0_4px_24px_rgba(16,24,40,0.12)] flex items-center px-2 py-1.5 relative">
+      <div className="mx-3 mb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card rounded-full shadow-[0_4px_24px_rgba(16,24,40,0.12)] flex items-center px-2 py-1.5 relative">
         {left.map((t) => (
           <Item key={t.id} tab={t} />
         ))}

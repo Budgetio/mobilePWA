@@ -31,7 +31,7 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
   )
 
   return (
-    <div className="absolute inset-0 z-40 bg-bg flex flex-col">
+    <div className="absolute inset-0 z-40 bg-bg flex flex-col pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-2 px-5 pt-4 pb-3">
         <button onClick={onClose} className="w-9 h-9 -ml-1 flex items-center justify-center text-ink">
           <ChevronLeft size={26} />
@@ -134,7 +134,7 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
         </Section>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 bg-bg/95 backdrop-blur px-5 py-4 flex items-center gap-3 border-t border-line">
+      <div className="absolute bottom-0 inset-x-0 bg-bg/95 backdrop-blur px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center gap-3 border-t border-line">
         <button
           onClick={() => setDraft(defaultFilters(budgets))}
           className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft flex items-center justify-center gap-2"

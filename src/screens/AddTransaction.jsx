@@ -92,7 +92,7 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
   }
 
   return (
-    <div className="absolute inset-0 z-40 bg-bg flex flex-col">
+    <div className="absolute inset-0 z-40 bg-bg flex flex-col pt-[env(safe-area-inset-top)]">
       {/* Hlavička */}
       <div className="flex items-center gap-2 px-5 pt-4 pb-3">
         <button onClick={onClose} className="w-9 h-9 -ml-1 flex items-center justify-center text-ink">
@@ -262,7 +262,7 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
       </div>
 
       {/* Akce */}
-      <div className="absolute bottom-0 inset-x-0 bg-bg/95 backdrop-blur px-5 py-4 flex items-center justify-end gap-3 border-t border-line">
+      <div className="absolute bottom-0 inset-x-0 bg-bg/95 backdrop-blur px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center justify-end gap-3 border-t border-line">
         <button onClick={onClose} className="px-5 py-3 rounded-2xl text-ink-soft font-semibold">
           Zrušit
         </button>

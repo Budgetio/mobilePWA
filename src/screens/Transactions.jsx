@@ -10,15 +10,10 @@ import PeriodNav from '../components/PeriodNav.jsx'
 import TransactionRow from '../components/TransactionRow.jsx'
 import Filters from './Filters.jsx'
 import { defaultFilters, activeFilterCount } from '../lib/filters.js'
-
-function pluralTx(n) {
-  if (n === 1) return 'transakce'
-  if (n >= 2 && n <= 4) return 'transakce'
-  return 'transakcí'
-}
+import { transactionCount } from '../lib/i18n.js'
 
 export default function Transactions({ period, setPeriod, onEdit }) {
-  const { state, categoryMap } = useStore()
+  const { state, categoryMap, t, lang } = useStore()
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState(() => defaultFilters(state.budgets))
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -64,7 +59,7 @@ export default function Transactions({ period, setPeriod, onEdit }) {
   return (
     <div className="px-5">
       <ScreenHeader
-        title="Transakce"
+        title={t('tx.title')}
         right={
           <button
             onClick={() => setFiltersOpen(true)}
@@ -84,11 +79,11 @@ export default function Transactions({ period, setPeriod, onEdit }) {
       {/* Souhrnné karty */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="rounded-2xl bg-income-light px-4 py-3">
-          <div className="text-sm font-medium text-income/80">Příjmy</div>
+          <div className="text-sm font-medium text-income/80">{t('common.income')}</div>
           <div className="text-xl font-extrabold text-income">+{formatMoney(sums.income)}</div>
         </div>
         <div className="rounded-2xl bg-expense-light px-4 py-3">
-          <div className="text-sm font-medium text-expense/80">Výdaje</div>
+          <div className="text-sm font-medium text-expense/80">{t('common.expense')}</div>
           <div className="text-xl font-extrabold text-expense">-{formatMoney(sums.expense)}</div>
         </div>
       </div>
@@ -100,7 +95,7 @@ export default function Transactions({ period, setPeriod, onEdit }) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Hledat..."
+            placeholder={t('common.search')}
             className="flex-1 bg-transparent outline-none text-ink placeholder:text-ink-mute"
           />
         </div>
@@ -108,7 +103,7 @@ export default function Transactions({ period, setPeriod, onEdit }) {
           onClick={() => setFiltersOpen(true)}
           className="h-12 px-4 rounded-2xl bg-accent text-accent-ink font-semibold flex items-center gap-2 relative"
         >
-          <SlidersHorizontal size={18} /> Filtry
+          <SlidersHorizontal size={18} /> {t('f.button')}
           {fCount > 0 && (
             <span className="w-5 h-5 rounded-full bg-accent-ink text-accent text-[11px] font-bold flex items-center justify-center">
               {fCount}
@@ -122,15 +117,15 @@ export default function Transactions({ period, setPeriod, onEdit }) {
         <PeriodNav period={period} onChange={setPeriod} variant="arrowsOutside" />
       </div>
       <div className="text-right text-sm text-ink-mute mb-3">
-        {filtered.length} {pluralTx(filtered.length)}
+        {transactionCount(filtered.length, lang)}
       </div>
 
       {/* Seznam */}
       {filtered.length === 0 ? (
         <EmptyState
           icon={<Inbox size={22} />}
-          title="Žádné transakce"
-          subtitle="Zkuste upravit filtry nebo přidat transakci tlačítkem +"
+          title={t('tx.empty.title')}
+          subtitle={t('tx.empty.sub')}
         />
       ) : (
         <div className="space-y-2.5">

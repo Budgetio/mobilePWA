@@ -14,7 +14,7 @@ import CategoryIcon from '../components/CategoryIcon.jsx'
 const compact = (n) => (Math.abs(n) >= 1000 ? `${Math.round(n / 1000)}k` : String(n))
 
 export default function Statistics({ period, setPeriod, onOpenCategories }) {
-  const { state, categoryMap, activeBudget } = useStore()
+  const { state, categoryMap, activeBudget, t } = useStore()
 
   const monthOcc = useMemo(() => {
     const { from, to } = periodRange(period)
@@ -49,11 +49,11 @@ export default function Statistics({ period, setPeriod, onOpenCategories }) {
   return (
     <div className="px-5">
       <div className="flex items-center justify-between pt-2 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink">Statistiky</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink">{t('st.title')}</h1>
         <button
           onClick={onOpenCategories}
           className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft"
-          aria-label="Spravovat kategorie"
+          aria-label={t('p.manageCategories')}
         >
           <Settings size={22} />
         </button>
@@ -67,13 +67,13 @@ export default function Statistics({ period, setPeriod, onOpenCategories }) {
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Card className="p-4">
           <div className="flex items-center gap-1.5 text-ink-soft text-sm mb-1">
-            <TrendingDown size={16} className="text-expense" /> Výdaje
+            <TrendingDown size={16} className="text-expense" /> {t('common.expense')}
           </div>
           <div className="text-2xl font-extrabold text-ink">{formatMoney(sums.expense)}</div>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-1.5 text-ink-soft text-sm mb-1">
-            <TrendingUp size={16} className="text-income" /> Příjmy
+            <TrendingUp size={16} className="text-income" /> {t('common.income')}
           </div>
           <div className="text-2xl font-extrabold text-ink">{formatMoney(sums.income)}</div>
         </Card>
@@ -81,9 +81,9 @@ export default function Statistics({ period, setPeriod, onOpenCategories }) {
 
       {/* Výdaje dle kategorie */}
       <Card className="p-4 mb-4">
-        <SectionTitle>Výdaje dle kategorie</SectionTitle>
+        <SectionTitle>{t('st.byCategory')}</SectionTitle>
         {byCat.length === 0 ? (
-          <p className="text-sm text-ink-mute py-4 text-center">Žádné výdaje v tomto měsíci.</p>
+          <p className="text-sm text-ink-mute py-4 text-center">{t('st.noExpenses')}</p>
         ) : (
           <div className="space-y-4">
             {byCat.map((c, i) => (
@@ -112,13 +112,13 @@ export default function Statistics({ period, setPeriod, onOpenCategories }) {
 
       {/* Příjmy vs Výdaje */}
       <Card className="p-4 mb-4">
-        <SectionTitle>Příjmy vs Výdaje</SectionTitle>
+        <SectionTitle>{t('st.incomeVsExpense')}</SectionTitle>
         <div className="flex items-center gap-2 mb-2">
           <span className="px-3 py-1 rounded-full bg-income-light text-income text-sm font-semibold flex items-center gap-1">
-            <TrendingUp size={14} /> Příjmy
+            <TrendingUp size={14} /> {t('common.income')}
           </span>
           <span className="px-3 py-1 rounded-full bg-expense-light text-expense text-sm font-semibold flex items-center gap-1">
-            <TrendingDown size={14} /> Výdaje
+            <TrendingDown size={14} /> {t('common.expense')}
           </span>
         </div>
         <div className="h-44">
@@ -137,18 +137,18 @@ export default function Statistics({ period, setPeriod, onOpenCategories }) {
 
       {/* Souhrn období */}
       <Card className="p-4 mb-2">
-        <SectionTitle>Souhrn období</SectionTitle>
+        <SectionTitle>{t('st.summary')}</SectionTitle>
         <div className="divide-y divide-line">
           <div className="flex items-center justify-between py-2.5">
-            <span className="text-ink-soft">Celkové příjmy</span>
+            <span className="text-ink-soft">{t('st.totalIncome')}</span>
             <span className="font-bold text-income">{formatMoney(sums.income)}</span>
           </div>
           <div className="flex items-center justify-between py-2.5">
-            <span className="text-ink-soft">Celkové výdaje</span>
+            <span className="text-ink-soft">{t('st.totalExpense')}</span>
             <span className="font-bold text-expense">{formatMoney(sums.expense)}</span>
           </div>
           <div className="flex items-center justify-between py-2.5">
-            <span className="font-bold text-ink">Úspory</span>
+            <span className="font-bold text-ink">{t('st.savings')}</span>
             <span className={'font-extrabold ' + (savings >= 0 ? 'text-income' : 'text-expense')}>
               {savings >= 0 ? '+' : ''}
               {formatMoney(savings)}
@@ -157,7 +157,7 @@ export default function Statistics({ period, setPeriod, onOpenCategories }) {
         </div>
         <div className="mt-3">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-sm font-semibold text-ink">Míra úspor</span>
+            <span className="text-sm font-semibold text-ink">{t('st.savingsRate')}</span>
             <span className="text-sm font-bold text-ink">{rate.toFixed(1)} %</span>
           </div>
           <div className="h-2.5 rounded-full bg-line-soft overflow-hidden">

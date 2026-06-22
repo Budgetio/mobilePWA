@@ -1,10 +1,12 @@
 import { Clock } from 'lucide-react'
 import CategoryIcon from './CategoryIcon.jsx'
 import { formatSigned, formatDate } from '../lib/format.js'
+import { useStore } from '../store/StoreProvider.jsx'
 
 // Řádek transakce v seznamu.
 // occ: instance transakce (z recurrence.transactionsForMonth)
 export default function TransactionRow({ occ, category, onClick }) {
+  const { t } = useStore()
   const planned = occ.planned
   const income = occ.type === 'income'
 
@@ -31,7 +33,7 @@ export default function TransactionRow({ occ, category, onClick }) {
           {occ.name}
           {occ.isRecurringInstance && (
             <span className="text-[10px] font-medium text-ink-mute border border-line rounded px-1 py-0.5">
-              opak.
+              {t('common.recurring')}
             </span>
           )}
         </div>

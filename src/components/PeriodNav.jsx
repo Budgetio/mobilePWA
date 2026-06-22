@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { periodLabel, shiftPeriod } from '../lib/period.js'
+import { useStore } from '../store/StoreProvider.jsx'
 import PeriodPicker from './PeriodPicker.jsx'
 
 // Přepínač období: šipky listují, kliknutím na střed se otevře výběr rozsahu.
 export default function PeriodNav({ period, onChange, variant = 'boxed' }) {
+  const { lang } = useStore()
   const [pickerOpen, setPickerOpen] = useState(false)
   const go = (dir) => onChange(shiftPeriod(period, dir))
-  const label = periodLabel(period)
+  const label = periodLabel(period, lang)
 
   const Picker = (
     <PeriodPicker

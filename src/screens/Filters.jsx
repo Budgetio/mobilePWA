@@ -4,12 +4,14 @@ import Dropdown from '../components/Dropdown.jsx'
 import { Segmented } from '../components/ui.jsx'
 import { flatCategoryOptions } from '../lib/categories.js'
 import { defaultFilters } from '../lib/filters.js'
+import { useStore } from '../store/StoreProvider.jsx'
 
 export default function Filters({ filters, budgets, categories, onApply, onClose }) {
+  const { t } = useStore()
   const [draft, setDraft] = useState(filters)
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }))
 
-  const catOptions = [{ value: 'all', label: 'Všechny kategorie' }, ...flatCategoryOptions(categories)]
+  const catOptions = [{ value: 'all', label: t('f.allCategories') }, ...flatCategoryOptions(categories)]
 
   const toggleBudget = (id) =>
     set({
@@ -36,14 +38,14 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
         <button onClick={onClose} className="w-9 h-9 -ml-1 flex items-center justify-center text-ink">
           <ChevronLeft size={26} />
         </button>
-        <h1 className="text-xl font-extrabold text-ink">Filtry</h1>
+        <h1 className="text-xl font-extrabold text-ink">{t('f.title')}</h1>
         <button onClick={onClose} className="ml-auto w-9 h-9 flex items-center justify-center text-ink-soft">
           <X size={22} />
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-32">
-        <Section title="Kategorie">
+        <Section title={t('field.category')}>
           <Dropdown
             value={draft.categoryId}
             options={catOptions}
@@ -53,13 +55,13 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
         </Section>
 
         <Section
-          title="Rozpočet"
+          title={t('field.budget')}
           right={
             <button
               onClick={() => set({ budgetIds: allSelected ? [] : budgets.map((b) => b.id) })}
               className="text-sm font-semibold text-accent-dark"
             >
-              {allSelected ? 'Zrušit vše' : 'Vybrat vše'}
+              {allSelected ? t('f.deselectAll') : t('f.selectAll')}
             </button>
           }
         >
@@ -83,31 +85,31 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
           </div>
         </Section>
 
-        <Section title="Typ transakce">
+        <Section title={t('f.typeTitle')}>
           <Segmented
             value={draft.type}
             onChange={(v) => set({ type: v })}
             options={[
-              { value: 'all', label: 'Vše' },
-              { value: 'income', label: 'Příjmy' },
-              { value: 'expense', label: 'Výdaje' },
+              { value: 'all', label: t('rec.all') },
+              { value: 'income', label: t('common.income') },
+              { value: 'expense', label: t('common.expense') },
             ]}
           />
         </Section>
 
-        <Section title="Opakování">
+        <Section title={t('f.recurrenceTitle')}>
           <Segmented
             value={draft.recurrence}
             onChange={(v) => set({ recurrence: v })}
             options={[
-              { value: 'all', label: 'Vše' },
-              { value: 'recurring', label: 'Opakované' },
-              { value: 'oneoff', label: 'Jednorázové' },
+              { value: 'all', label: t('rec.all') },
+              { value: 'recurring', label: t('rec.recurring') },
+              { value: 'oneoff', label: t('rec.oneoffPlural') },
             ]}
           />
         </Section>
 
-        <Section title="Rozsah částky">
+        <Section title={t('f.amountRange')}>
           <div className="flex items-center gap-2">
             <div className="flex-1 h-12 rounded-2xl bg-card border border-line flex items-center px-3 gap-2">
               <ArrowDownToLine size={16} className="text-ink-mute" />
@@ -115,7 +117,7 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
                 value={draft.min}
                 onChange={(e) => set({ min: e.target.value })}
                 inputMode="decimal"
-                placeholder="Min"
+                placeholder={t('f.min')}
                 className="flex-1 bg-transparent outline-none text-ink placeholder:text-ink-mute w-full"
               />
             </div>
@@ -126,7 +128,7 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
                 value={draft.max}
                 onChange={(e) => set({ max: e.target.value })}
                 inputMode="decimal"
-                placeholder="Max"
+                placeholder={t('f.max')}
                 className="flex-1 bg-transparent outline-none text-ink placeholder:text-ink-mute w-full"
               />
             </div>
@@ -139,7 +141,7 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
           onClick={() => setDraft(defaultFilters(budgets))}
           className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft flex items-center justify-center gap-2"
         >
-          <RotateCcw size={18} /> Resetovat
+          <RotateCcw size={18} /> {t('common.reset')}
         </button>
         <button
           onClick={() => {
@@ -148,7 +150,7 @@ export default function Filters({ filters, budgets, categories, onApply, onClose
           }}
           className="flex-1 h-12 rounded-2xl bg-accent text-accent-ink font-bold flex items-center justify-center gap-2"
         >
-          <Check size={18} /> Použít filtry
+          <Check size={18} /> {t('f.apply')}
         </button>
       </div>
     </div>

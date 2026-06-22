@@ -41,7 +41,8 @@ Produkční build (`dist/`) je plnohodnotná PWA – funguje offline a jde nains
 - **Statistiky** — výdaje dle kategorie (proužky), Příjmy vs Výdaje za 6 měsíců, měsíční přehled s úsporami a mírou úspor.
 - **Kategorie** — správa stromu: rozbalování, vyhledávání, přidání kategorie i **podkategorie** (dialog), přejmenování a mazání (včetně podstromu). Dostupné přes ozubené kolo ve Statistikách/Profilu nebo „Spravovat" u kategorie v Přidat transakci.
 - **Filtry** — kategorie (vč. podkategorií), výběr rozpočtů (Vybrat vše), typ, opakování, rozsah částky; počet aktivních filtrů se ukazuje na tlačítku.
-- **Profil** — úprava jména/e-mailu, jazyk, **záloha dat (export/import JSON)**, správa štítků (přidat/přejmenovat/smazat), reset dat na výchozí, instalace aplikace.
+- **Profil** — úprava jména/e-mailu, **přepínání jazyka (čeština / angličtina)**, **záloha dat (export/import JSON)**, správa štítků (přidat/přejmenovat/smazat), reset dat na výchozí, instalace aplikace.
+- **Jazyky** — celé rozhraní v češtině i angličtině; přepíná se v Profilu. Mění se i formát čísel, dat a názvy měsíců. (Názvy vlastních kategorií a štítků zůstávají tak, jak je zadáte.)
 - **PWA** — offline provoz (service worker), instalace na plochu, ikony a manifest.
 - Demo data se generují relativně k dnešnímu dni, aby grafy i plánované položky dávaly smysl.
 

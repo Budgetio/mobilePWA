@@ -8,6 +8,7 @@ import { Card } from '../components/ui.jsx'
 import Modal from '../components/Modal.jsx'
 import Dropdown from '../components/Dropdown.jsx'
 import { downloadJSON, readBackupFile } from '../lib/backup.js'
+import { LANGUAGES } from '../lib/i18n.js'
 
 function initials(name) {
   return (name || '?')
@@ -19,7 +20,8 @@ function initials(name) {
 }
 
 export default function Profile({ onOpenCategories }) {
-  const { state, updateProfile, addTag, renameTag, deleteTag, importState, resetAll } = useStore()
+  const { state, updateProfile, addTag, renameTag, deleteTag, importState, resetAll, setLanguage, lang, t } =
+    useStore()
   const profile = state.settings.profile
 
   const [editProfile, setEditProfile] = useState(false)
@@ -69,9 +71,9 @@ export default function Profile({ onOpenCategories }) {
     try {
       const data = await readBackupFile(file)
       importState(data)
-      flash('Záloha byla importována.')
+      flash(t('p.imported'))
     } catch (err) {
-      flash(err.message || 'Import se nezdařil.')
+      flash(err.message || t('p.importFailed'))
     }
   }
 
@@ -97,8 +99,8 @@ export default function Profile({ onOpenCategories }) {
   return (
     <div className="px-5">
       <div className="flex items-center justify-between pt-2 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink">Profil</h1>
-        <button onClick={onOpenCategories} className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft" aria-label="Nastavení">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink">{t('p.title')}</h1>
+        <button onClick={onOpenCategories} className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft" aria-label={t('p.manageCategories')}>
           <Settings size={22} />
         </button>
       </div>
@@ -118,7 +120,7 @@ export default function Profile({ onOpenCategories }) {
           }}
           className="mt-2 text-sm font-semibold text-accent-dark flex items-center gap-1"
         >
-          <Pencil size={14} /> Upravit
+          <Pencil size={14} /> {t('p.edit')}
         </button>
       </div>
 
@@ -132,33 +134,35 @@ export default function Profile({ onOpenCategories }) {
       <Card className="p-4 mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Globe size={18} className="text-ink-soft" />
-          <h3 className="font-bold text-ink">Jazyk</h3>
+          <h3 className="font-bold text-ink">{t('p.language')}</h3>
         </div>
-        <p className="text-sm text-ink-mute mb-3">Jazyk aplikace</p>
-        <Dropdown value="cs" options={[{ value: 'cs', label: 'Čeština' }]} onChange={() => {}} />
+        <p className="text-sm text-ink-mute mb-3">{t('p.languageDesc')}</p>
+        <Dropdown
+          value={lang}
+          options={LANGUAGES.map((l) => ({ value: l.value, label: t(l.key) }))}
+          onChange={setLanguage}
+        />
       </Card>
 
       {/* Záloha dat */}
       <Card className="p-4 mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Database size={18} className="text-ink-soft" />
-          <h3 className="font-bold text-ink">Záloha dat</h3>
+          <h3 className="font-bold text-ink">{t('p.backup')}</h3>
         </div>
-        <p className="text-sm text-ink-mute mb-3">
-          Data jsou uložena jen v tomto prohlížeči. Zálohu si stáhněte do souboru, nebo ji obnovte.
-        </p>
+        <p className="text-sm text-ink-mute mb-3">{t('p.backupDesc')}</p>
         <div className="flex gap-2">
           <button
             onClick={() => downloadJSON(state)}
             className="flex-1 h-11 rounded-2xl bg-accent text-accent-ink font-semibold flex items-center justify-center gap-2"
           >
-            <Download size={18} /> Export
+            <Download size={18} /> {t('p.export')}
           </button>
           <button
             onClick={() => fileRef.current?.click()}
             className="flex-1 h-11 rounded-2xl border border-line font-semibold text-ink flex items-center justify-center gap-2"
           >
-            <Upload size={18} /> Import
+            <Upload size={18} /> {t('p.import')}
           </button>
           <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onImportFile} />
         </div>
@@ -166,42 +170,42 @@ export default function Profile({ onOpenCategories }) {
 
       {/* Nastavení */}
       <Card className="mb-4 overflow-hidden divide-y divide-line">
-        <SettingsRow icon={<Grid3x3 size={20} />} label="Spravovat kategorie" onClick={onOpenCategories} />
-        {installEvt && <SettingsRow icon={<Smartphone size={20} />} label="Instalovat aplikaci" onClick={install} />}
+        <SettingsRow icon={<Grid3x3 size={20} />} label={t('p.manageCategories')} onClick={onOpenCategories} />
+        {installEvt && <SettingsRow icon={<Smartphone size={20} />} label={t('p.install')} onClick={install} />}
       </Card>
 
       {/* Správa štítků */}
       <Card className="p-4 mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Tag size={18} className="text-ink-soft" />
-          <h3 className="font-bold text-ink">Správa štítků</h3>
+          <h3 className="font-bold text-ink">{t('p.tags')}</h3>
         </div>
-        <p className="text-sm text-ink-mute mb-3">Přidejte, upravte nebo odstraňte štítky pro transakce.</p>
+        <p className="text-sm text-ink-mute mb-3">{t('p.tagsDesc')}</p>
         <div className="space-y-2">
-          {state.tags.map((t) => (
-            <div key={t.id} className="flex items-center gap-2 bg-bg rounded-xl px-3 py-2.5">
+          {state.tags.map((tag) => (
+            <div key={tag.id} className="flex items-center gap-2 bg-bg rounded-xl px-3 py-2.5">
               <Tag size={16} className="text-ink-mute" />
-              <span className="flex-1 font-medium text-ink">{t.name}</span>
+              <span className="flex-1 font-medium text-ink">{tag.name}</span>
               <button
                 onClick={() => {
-                  setTagValue(t.name)
-                  setTagDialog({ mode: 'rename', id: t.id })
+                  setTagValue(tag.name)
+                  setTagDialog({ mode: 'rename', id: tag.id })
                 }}
                 className="w-8 h-8 flex items-center justify-center text-ink-soft"
-                aria-label="Upravit štítek"
+                aria-label={t('p.renameTag')}
               >
                 <Pencil size={15} />
               </button>
               <button
-                onClick={() => setConfirmTag(t)}
+                onClick={() => setConfirmTag(tag)}
                 className="w-8 h-8 flex items-center justify-center text-expense/80"
-                aria-label="Smazat štítek"
+                aria-label={t('p.deleteTagTitle')}
               >
                 <Trash2 size={15} />
               </button>
             </div>
           ))}
-          {state.tags.length === 0 && <p className="text-sm text-ink-mute">Zatím žádné štítky.</p>}
+          {state.tags.length === 0 && <p className="text-sm text-ink-mute">{t('p.noTags')}</p>}
         </div>
         <button
           onClick={() => {
@@ -210,7 +214,7 @@ export default function Profile({ onOpenCategories }) {
           }}
           className="w-full mt-3 h-11 rounded-2xl border-2 border-accent text-accent-dark font-semibold flex items-center justify-center gap-2"
         >
-          <Plus size={18} /> Přidat štítek
+          <Plus size={18} /> {t('p.addTag')}
         </button>
       </Card>
 
@@ -219,18 +223,18 @@ export default function Profile({ onOpenCategories }) {
         onClick={() => setConfirmReset(true)}
         className="w-full h-12 rounded-2xl bg-expense text-white font-bold flex items-center justify-center gap-2 mb-2"
       >
-        <RotateCcw size={18} /> Resetovat data
+        <RotateCcw size={18} /> {t('p.resetData')}
       </button>
 
       {/* Dialog úpravy profilu */}
-      <Modal open={editProfile} onClose={() => setEditProfile(false)} title="Upravit profil">
-        <label className="block text-sm font-semibold text-ink mb-1.5">Jméno</label>
+      <Modal open={editProfile} onClose={() => setEditProfile(false)} title={t('p.editProfile')}>
+        <label className="block text-sm font-semibold text-ink mb-1.5">{t('p.name')}</label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full h-12 px-4 rounded-2xl bg-bg border border-line outline-none text-ink mb-3"
         />
-        <label className="block text-sm font-semibold text-ink mb-1.5">E-mail</label>
+        <label className="block text-sm font-semibold text-ink mb-1.5">{t('p.email')}</label>
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -238,10 +242,10 @@ export default function Profile({ onOpenCategories }) {
         />
         <div className="flex gap-3 mt-4">
           <button onClick={() => setEditProfile(false)} className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft">
-            Zrušit
+            {t('common.cancel')}
           </button>
           <button onClick={saveProfile} className="flex-1 h-12 rounded-2xl bg-accent text-accent-ink font-bold">
-            Uložit
+            {t('common.save')}
           </button>
         </div>
       </Modal>
@@ -250,22 +254,22 @@ export default function Profile({ onOpenCategories }) {
       <Modal
         open={!!tagDialog}
         onClose={() => setTagDialog(null)}
-        title={tagDialog?.mode === 'rename' ? 'Přejmenovat štítek' : 'Nový štítek'}
+        title={tagDialog?.mode === 'rename' ? t('p.renameTag') : t('p.newTag')}
       >
         <input
           autoFocus
           value={tagValue}
           onChange={(e) => setTagValue(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submitTag()}
-          placeholder="Název štítku..."
+          placeholder={t('p.tagPlaceholder')}
           className="w-full h-12 px-4 rounded-2xl bg-bg border-2 border-accent outline-none text-ink"
         />
         <div className="flex gap-3 mt-4">
           <button onClick={() => setTagDialog(null)} className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft">
-            Zrušit
+            {t('common.cancel')}
           </button>
           <button onClick={submitTag} className="flex-1 h-12 rounded-2xl bg-accent text-accent-ink font-bold">
-            {tagDialog?.mode === 'rename' ? 'Uložit' : 'Přidat'}
+            {tagDialog?.mode === 'rename' ? t('common.save') : t('common.add')}
           </button>
         </div>
       </Modal>
@@ -274,12 +278,12 @@ export default function Profile({ onOpenCategories }) {
       <Modal
         open={!!confirmTag}
         onClose={() => setConfirmTag(null)}
-        title="Smazat štítek?"
-        description={`Štítek "${confirmTag?.name}" bude odebrán ze všech transakcí.`}
+        title={t('p.deleteTagTitle')}
+        description={t('p.deleteTagDesc', { name: confirmTag?.name })}
       >
         <div className="flex gap-3">
           <button onClick={() => setConfirmTag(null)} className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft">
-            Zrušit
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => {
@@ -288,7 +292,7 @@ export default function Profile({ onOpenCategories }) {
             }}
             className="flex-1 h-12 rounded-2xl bg-expense text-white font-bold"
           >
-            Smazat
+            {t('common.delete')}
           </button>
         </div>
       </Modal>
@@ -297,22 +301,22 @@ export default function Profile({ onOpenCategories }) {
       <Modal
         open={confirmReset}
         onClose={() => setConfirmReset(false)}
-        title="Resetovat data?"
-        description="Všechny transakce, kategorie a štítky budou nahrazeny výchozími ukázkovými daty. Tuto akci nelze vrátit – nejdřív si případně stáhněte zálohu."
+        title={t('p.resetTitle')}
+        description={t('p.resetDesc')}
       >
         <div className="flex gap-3">
           <button onClick={() => setConfirmReset(false)} className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft">
-            Zrušit
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => {
               resetAll()
               setConfirmReset(false)
-              flash('Data byla obnovena na výchozí.')
+              flash(t('p.resetDone'))
             }}
             className="flex-1 h-12 rounded-2xl bg-expense text-white font-bold"
           >
-            Resetovat
+            {t('common.reset')}
           </button>
         </div>
       </Modal>

@@ -29,7 +29,7 @@ export function periodDays(p) {
   return Math.round((parseISO(to) - parseISO(from)) / 86400000) + 1
 }
 
-export function periodLabel(p) {
+export function periodLabel(p, lang = 'cs') {
   const { from, to } = periodRange(p)
   const f = parseISO(from)
   const t = parseISO(to)
@@ -48,9 +48,15 @@ export function periodLabel(p) {
     f.getFullYear() === t.getFullYear() &&
     f.getMonth() === 0 && f.getDate() === 1 &&
     t.getMonth() === 11 && t.getDate() === 31
-  if (isFullYear) return `Rok ${f.getFullYear()}`
+  if (isFullYear) return `${lang === 'en' ? 'Year' : 'Rok'} ${f.getFullYear()}`
 
   return `${formatDate(from)} – ${formatDate(to)}`
+}
+
+// Klíč rozsahu pro porovnání aktivní předvolby (nezávislé na jazyku).
+export function periodKey(p) {
+  const { from, to } = periodRange(p)
+  return `${from}_${to}`
 }
 
 // Posun období šipkou. Měsíc → o měsíc; rozsah → o vlastní délku.
@@ -79,11 +85,11 @@ export function periodPresets(today = new Date()) {
     return rangePeriod(toISO(from), toISO(to))
   }
   return [
-    { id: 'thisMonth', label: 'Tento měsíc', period: monthPeriod(y, m) },
-    { id: 'lastMonth', label: 'Minulý měsíc', period: monthPeriod(prevMonth.getFullYear(), prevMonth.getMonth()) },
-    { id: 'last30', label: 'Posledních 30 dní', period: lastN(30) },
-    { id: 'last90', label: 'Posledních 90 dní', period: lastN(90) },
-    { id: 'thisYear', label: 'Tento rok', period: rangePeriod(toISO(new Date(y, 0, 1)), toISO(new Date(y, 11, 31))) },
-    { id: 'lastYear', label: 'Minulý rok', period: rangePeriod(toISO(new Date(y - 1, 0, 1)), toISO(new Date(y - 1, 11, 31))) },
+    { id: 'thisMonth', tKey: 'pp.thisMonth', period: monthPeriod(y, m) },
+    { id: 'lastMonth', tKey: 'pp.lastMonth', period: monthPeriod(prevMonth.getFullYear(), prevMonth.getMonth()) },
+    { id: 'last30', tKey: 'pp.last30', period: lastN(30) },
+    { id: 'last90', tKey: 'pp.last90', period: lastN(90) },
+    { id: 'thisYear', tKey: 'pp.thisYear', period: rangePeriod(toISO(new Date(y, 0, 1)), toISO(new Date(y, 11, 31))) },
+    { id: 'lastYear', tKey: 'pp.lastYear', period: rangePeriod(toISO(new Date(y - 1, 0, 1)), toISO(new Date(y - 1, 11, 31))) },
   ]
 }

@@ -31,7 +31,7 @@ const field =
   'w-full h-12 px-4 rounded-2xl bg-card border border-line outline-none text-ink placeholder:text-ink-mute'
 
 export default function AddTransaction({ editing, defaultBudgetId, onClose, onManageCategories }) {
-  const { state, addTransaction, updateTransaction, deleteTransaction } = useStore()
+  const { state, addTransaction, updateTransaction, deleteTransaction, t } = useStore()
   const base = editing || null
 
   const [type, setType] = useState(base?.type || 'expense')
@@ -63,8 +63,8 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
 
   const save = () => {
     const value = Number(String(amount).replace(',', '.'))
-    if (!name.trim()) return setError('Zadejte název.')
-    if (!value || value <= 0) return setError('Zadejte platnou částku.')
+    if (!name.trim()) return setError(t('add.errName'))
+    if (!value || value <= 0) return setError(t('add.errAmount'))
 
     const payload = {
       type,
@@ -99,7 +99,7 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
           <ChevronLeft size={26} />
         </button>
         <h1 className="text-xl font-extrabold text-ink">
-          {base ? 'Upravit transakci' : 'Přidat transakci'}
+          {base ? t('add.editTitle') : t('add.title')}
         </h1>
         {base && (
           <button
@@ -116,8 +116,8 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
         {/* Typ */}
         <div className="bg-card rounded-2xl p-1 flex">
           {[
-            { v: 'expense', l: 'Výdaj' },
-            { v: 'income', l: 'Příjem' },
+            { v: 'expense', l: t('add.expense') },
+            { v: 'income', l: t('add.income') },
           ].map((o) => (
             <button
               key={o.v}
@@ -133,18 +133,18 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
         </div>
 
         <div>
-          <Label>Rozpočet</Label>
+          <Label>{t('field.budget')}</Label>
           <Dropdown value={budgetId} options={budgetOptions} onChange={setBudgetId} />
         </div>
 
         <div>
-          <Label>Název</Label>
-          <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Název" />
+          <Label>{t('field.name')}</Label>
+          <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('field.name')} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Částka</Label>
+            <Label>{t('field.amount')}</Label>
             <div className="relative">
               <Coins size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-mute" />
               <input
@@ -157,14 +157,14 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
             </div>
           </div>
           <div>
-            <Label>Měna</Label>
+            <Label>{t('field.currency')}</Label>
             <Dropdown value="CZK" options={[{ value: 'CZK', label: 'CZK' }]} onChange={() => {}} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>{recurring ? 'První datum' : 'Datum'}</Label>
+            <Label>{recurring ? t('field.firstDate') : t('field.date')}</Label>
             <div className="relative">
               <Calendar size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-mute pointer-events-none" />
               <input
@@ -176,12 +176,12 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
             </div>
           </div>
           <div>
-            <Label>Opakování</Label>
+            <Label>{t('field.recurrence')}</Label>
             <Dropdown
               value={recurring ? 'monthly' : 'none'}
               options={[
-                { value: 'none', label: 'Jednorázově' },
-                { value: 'monthly', label: 'Měsíčně' },
+                { value: 'none', label: t('rec.oneoff') },
+                { value: 'monthly', label: t('rec.monthly') },
               ]}
               onChange={(v) => setRecurring(v === 'monthly')}
               leftIcon={<RefreshCw size={16} />}
@@ -192,11 +192,11 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
         {recurring && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Datum začátku</Label>
+              <Label>{t('field.startDate')}</Label>
               <input type="date" className={field} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
             <div>
-              <Label>Datum konce</Label>
+              <Label>{t('field.endDate')}</Label>
               <input
                 type="date"
                 className={field}
@@ -210,10 +210,10 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <Label>Kategorie</Label>
+            <Label>{t('field.category')}</Label>
             {onManageCategories && (
               <button type="button" onClick={onManageCategories} className="text-sm font-semibold text-accent-dark">
-                Spravovat
+                {t('add.manage')}
               </button>
             )}
           </div>
@@ -221,13 +221,13 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
             value={categoryId}
             options={catOptions}
             onChange={setCategoryId}
-            placeholder="Vyberte kategorii"
+            placeholder={t('add.pickCategory')}
             leftIcon={<Grid3x3 size={16} />}
           />
         </div>
 
         <div>
-          <Label>Štítky</Label>
+          <Label>{t('field.tags')}</Label>
           <div className="flex flex-wrap gap-2">
             {state.tags.map((t) => {
               const active = tagIds.includes(t.id)
@@ -249,12 +249,12 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
         </div>
 
         <div>
-          <Label>Poznámka</Label>
+          <Label>{t('field.note')}</Label>
           <textarea
             className="w-full min-h-[80px] px-4 py-3 rounded-2xl bg-card border border-line outline-none text-ink placeholder:text-ink-mute resize-none"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Poznámka"
+            placeholder={t('field.note')}
           />
         </div>
 
@@ -264,10 +264,10 @@ export default function AddTransaction({ editing, defaultBudgetId, onClose, onMa
       {/* Akce */}
       <div className="absolute bottom-0 inset-x-0 bg-bg/95 backdrop-blur px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center justify-end gap-3 border-t border-line">
         <button onClick={onClose} className="px-5 py-3 rounded-2xl text-ink-soft font-semibold">
-          Zrušit
+          {t('common.cancel')}
         </button>
         <button onClick={save} className="px-7 py-3 rounded-2xl bg-accent text-accent-ink font-bold shadow-sm">
-          Uložit
+          {t('common.save')}
         </button>
       </div>
     </div>

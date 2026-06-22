@@ -8,7 +8,7 @@ import Modal from '../components/Modal.jsx'
 import { Segmented } from '../components/ui.jsx'
 
 export default function Categories({ onClose, selectedId, onPick }) {
-  const { state, addCategory, renameCategory, deleteCategory } = useStore()
+  const { state, addCategory, renameCategory, deleteCategory, t } = useStore()
   const [kind, setKind] = useState('expense')
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState(() => new Set())
@@ -141,7 +141,7 @@ export default function Categories({ onClose, selectedId, onPick }) {
         <button onClick={onClose} className="w-9 h-9 -ml-1 flex items-center justify-center text-ink">
           <ChevronLeft size={26} />
         </button>
-        <h1 className="text-xl font-extrabold text-ink">Kategorie</h1>
+        <h1 className="text-xl font-extrabold text-ink">{t('cat.title')}</h1>
       </div>
 
       <div className="px-5 pb-3">
@@ -149,8 +149,8 @@ export default function Categories({ onClose, selectedId, onPick }) {
           value={kind}
           onChange={setKind}
           options={[
-            { value: 'expense', label: 'Výdaje' },
-            { value: 'income', label: 'Příjmy' },
+            { value: 'expense', label: t('common.expense') },
+            { value: 'income', label: t('common.income') },
           ]}
         />
       </div>
@@ -161,7 +161,7 @@ export default function Categories({ onClose, selectedId, onPick }) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Hledat..."
+            placeholder={t('common.search')}
             className="flex-1 bg-transparent outline-none text-ink placeholder:text-ink-mute"
           />
         </div>
@@ -177,7 +177,7 @@ export default function Categories({ onClose, selectedId, onPick }) {
       <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-8">
         {searchResults ? (
           searchResults.length === 0 ? (
-            <p className="text-center text-ink-mute py-10">Nic nenalezeno.</p>
+            <p className="text-center text-ink-mute py-10">{t('cat.notFound')}</p>
           ) : (
             searchResults.map((c) => <Row key={c.id} cat={c} depth={0} />)
           )
@@ -192,16 +192,16 @@ export default function Categories({ onClose, selectedId, onPick }) {
         onClose={() => setDialog(null)}
         title={
           dialog?.mode === 'rename'
-            ? 'Přejmenovat kategorii'
+            ? t('cat.rename')
             : dialog?.mode === 'sub'
-            ? 'Nová podkategorie'
-            : 'Nová kategorie'
+            ? t('cat.newSub')
+            : t('cat.new')
         }
         description={
           dialog?.mode === 'sub'
-            ? `Zadejte název nové podkategorie pro ${dialog?.parentName}.`
+            ? t('cat.subDesc', { parent: dialog?.parentName })
             : dialog?.mode === 'add'
-            ? `Nová ${kind === 'expense' ? 'výdajová' : 'příjmová'} kategorie.`
+            ? t(kind === 'expense' ? 'cat.newDescExpense' : 'cat.newDescIncome')
             : undefined
         }
       >
@@ -210,7 +210,7 @@ export default function Categories({ onClose, selectedId, onPick }) {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder="Název kategorie..."
+          placeholder={t('cat.namePlaceholder')}
           className="w-full h-12 px-4 rounded-2xl bg-bg border-2 border-accent outline-none text-ink placeholder:text-ink-mute"
         />
         <div className="flex gap-3 mt-4">
@@ -218,10 +218,10 @@ export default function Categories({ onClose, selectedId, onPick }) {
             onClick={() => setDialog(null)}
             className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft"
           >
-            Zrušit
+            {t('common.cancel')}
           </button>
           <button onClick={submit} className="flex-1 h-12 rounded-2xl bg-accent text-accent-ink font-bold">
-            {dialog?.mode === 'rename' ? 'Uložit' : 'Přidat'}
+            {dialog?.mode === 'rename' ? t('common.save') : t('common.add')}
           </button>
         </div>
       </Modal>
@@ -230,15 +230,15 @@ export default function Categories({ onClose, selectedId, onPick }) {
       <Modal
         open={!!confirmDel}
         onClose={() => setConfirmDel(null)}
-        title="Smazat kategorii?"
-        description={`Kategorie "${confirmDel?.name}" i její podkategorie budou odstraněny. Transakce zůstanou zachovány bez kategorie.`}
+        title={t('cat.deleteTitle')}
+        description={t('cat.deleteDesc', { name: confirmDel?.name })}
       >
         <div className="flex gap-3">
           <button
             onClick={() => setConfirmDel(null)}
             className="flex-1 h-12 rounded-2xl border border-line font-semibold text-ink-soft"
           >
-            Zrušit
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => {
@@ -247,7 +247,7 @@ export default function Categories({ onClose, selectedId, onPick }) {
             }}
             className="flex-1 h-12 rounded-2xl bg-expense text-white font-bold"
           >
-            Smazat
+            {t('common.delete')}
           </button>
         </div>
       </Modal>

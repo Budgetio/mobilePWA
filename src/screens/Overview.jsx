@@ -33,12 +33,13 @@ function groupByRoot(occ, map) {
 }
 
 function Donut({ title, data }) {
+  const { t } = useStore()
   const total = data.reduce((s, d) => s + d.value, 0)
   return (
     <Card className="p-4 flex-1">
       <h3 className="font-bold text-ink mb-2">{title}</h3>
       {total === 0 ? (
-        <p className="text-sm text-ink-mute py-8 text-center">Žádná data</p>
+        <p className="text-sm text-ink-mute py-8 text-center">{t('common.noData')}</p>
       ) : (
         <>
           <div className="h-32">
@@ -68,7 +69,7 @@ function Donut({ title, data }) {
 }
 
 export default function Overview({ period, setPeriod, onEdit }) {
-  const { state, categoryMap, activeBudget, setActiveBudget } = useStore()
+  const { state, categoryMap, activeBudget, setActiveBudget, t } = useStore()
 
   const monthOcc = useMemo(() => {
     const { from, to } = periodRange(period)
@@ -107,8 +108,8 @@ export default function Overview({ period, setPeriod, onEdit }) {
   return (
     <div className="px-5">
       <div className="flex items-center justify-between px-0 pt-2 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink">Přehled</h1>
-        <button className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft" aria-label="Oznámení">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink">{t('ov.title')}</h1>
+        <button className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft" aria-label={t('ov.title')}>
           <Bell size={22} />
         </button>
       </div>
@@ -126,7 +127,7 @@ export default function Overview({ period, setPeriod, onEdit }) {
       <div className="grid grid-cols-3 gap-2.5 mb-4">
         <Card className="p-3">
           <div className="flex items-center gap-1 text-ink-soft text-xs mb-1">
-            <Wallet size={14} /> Zůstatek
+            <Wallet size={14} /> {t('ov.balance')}
           </div>
           <div className={'text-base font-extrabold ' + (sums.balance < 0 ? 'text-expense' : 'text-ink')}>
             {formatMoney(sums.balance)}
@@ -134,13 +135,13 @@ export default function Overview({ period, setPeriod, onEdit }) {
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-1 text-income text-xs mb-1">
-            <TrendingUp size={14} /> Příjmy
+            <TrendingUp size={14} /> {t('common.income')}
           </div>
           <div className="text-base font-extrabold text-income">{formatMoney(sums.income)}</div>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-1 text-expense text-xs mb-1">
-            <TrendingDown size={14} /> Výdaje
+            <TrendingDown size={14} /> {t('common.expense')}
           </div>
           <div className="text-base font-extrabold text-expense">{formatMoney(sums.expense)}</div>
         </Card>
@@ -148,7 +149,7 @@ export default function Overview({ period, setPeriod, onEdit }) {
 
       {/* Peněžní tok */}
       <Card className="p-4 mb-4">
-        <SectionTitle>Peněžní tok</SectionTitle>
+        <SectionTitle>{t('ov.cashflow')}</SectionTitle>
         <div className="h-44">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={cashflow} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
@@ -162,16 +163,16 @@ export default function Overview({ period, setPeriod, onEdit }) {
           </ResponsiveContainer>
         </div>
         <div className="flex items-center gap-4 mt-2 text-sm">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-income" /> Příjmy</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-expense" /> Výdaje</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-income" /> {t('common.income')}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-expense" /> {t('common.expense')}</span>
         </div>
       </Card>
 
       {/* Plánované výdaje */}
       <div className="mb-4">
-        <SectionTitle>Plánované výdaje</SectionTitle>
+        <SectionTitle>{t('ov.planned')}</SectionTitle>
         {planned.length === 0 ? (
-          <Card className="p-4 text-sm text-ink-mute text-center">Žádné plánované výdaje v tomto měsíci.</Card>
+          <Card className="p-4 text-sm text-ink-mute text-center">{t('ov.noPlanned')}</Card>
         ) : (
           <div className="space-y-2.5">
             {planned.slice(0, 5).map((o) => {
@@ -202,7 +203,7 @@ export default function Overview({ period, setPeriod, onEdit }) {
 
       {/* Změny */}
       <Card className="p-4 mb-4">
-        <SectionTitle>Změny</SectionTitle>
+        <SectionTitle>{t('ov.changes')}</SectionTitle>
         <div className="h-44">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={weekly} margin={{ top: 5, right: 8, left: -12, bottom: 0 }}>
@@ -219,8 +220,8 @@ export default function Overview({ period, setPeriod, onEdit }) {
 
       {/* Donuty */}
       <div className="flex gap-3 mb-2">
-        <Donut title="Výdaje" data={expenseByCat} />
-        <Donut title="Příjmy" data={incomeByCat} />
+        <Donut title={t('common.expense')} data={expenseByCat} />
+        <Donut title={t('common.income')} data={incomeByCat} />
       </div>
     </div>
   )

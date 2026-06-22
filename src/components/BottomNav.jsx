@@ -1,14 +1,15 @@
 import { LayoutGrid, ArrowLeftRight, Plus, BarChart3, User } from 'lucide-react'
+import { useStore } from '../store/StoreProvider.jsx'
 
 const TABS = [
-  { id: 'overview', label: 'PŘEHLED', icon: LayoutGrid },
-  { id: 'transactions', label: 'TRANSAKCE', icon: ArrowLeftRight },
-  { id: 'stats', label: 'STATISTIKY', icon: BarChart3 },
-  { id: 'profile', label: 'PROFIL', icon: User },
+  { id: 'overview', tKey: 'nav.overview', icon: LayoutGrid },
+  { id: 'transactions', tKey: 'nav.transactions', icon: ArrowLeftRight },
+  { id: 'stats', tKey: 'nav.stats', icon: BarChart3 },
+  { id: 'profile', tKey: 'nav.profile', icon: User },
 ]
 
 export default function BottomNav({ active, onChange, onAdd }) {
-  // Vykreslíme 2 taby vlevo, FAB uprostřed, 2 taby vpravo.
+  const { t } = useStore()
   const left = TABS.slice(0, 2)
   const right = TABS.slice(2)
 
@@ -30,11 +31,10 @@ export default function BottomNav({ active, onChange, onAdd }) {
         </span>
         <span
           className={
-            'text-[10px] font-semibold tracking-wide ' +
-            (isActive ? 'text-ink' : 'text-ink-mute')
+            'text-[10px] font-semibold tracking-wide ' + (isActive ? 'text-ink' : 'text-ink-mute')
           }
         >
-          {tab.label}
+          {t(tab.tKey)}
         </span>
       </button>
     )
@@ -43,23 +43,22 @@ export default function BottomNav({ active, onChange, onAdd }) {
   return (
     <div className="absolute bottom-0 inset-x-0 z-30">
       <div className="mx-3 mb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card rounded-full shadow-[0_4px_24px_rgba(16,24,40,0.12)] flex items-center px-2 py-1.5 relative">
-        {left.map((t) => (
-          <Item key={t.id} tab={t} />
+        {left.map((tab) => (
+          <Item key={tab.id} tab={tab} />
         ))}
 
-        {/* Středové FAB tlačítko */}
         <div className="flex-shrink-0 px-1">
           <button
             onClick={onAdd}
             className="w-14 h-14 rounded-full bg-accent text-accent-ink flex items-center justify-center shadow-fab active:scale-95 transition -mt-6"
-            aria-label="Přidat transakci"
+            aria-label={t('nav.add')}
           >
             <Plus size={28} strokeWidth={2.6} />
           </button>
         </div>
 
-        {right.map((t) => (
-          <Item key={t.id} tab={t} />
+        {right.map((tab) => (
+          <Item key={tab.id} tab={tab} />
         ))}
       </div>
     </div>

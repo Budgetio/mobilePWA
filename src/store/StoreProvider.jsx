@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { loadState, saveState, resetState } from '../lib/storage.js'
 import { indexCategories } from '../lib/categories.js'
+import { makeT } from '../lib/i18n.js'
+import { setLocale } from '../lib/format.js'
 import { uid } from '../lib/id.js'
 
 const StoreContext = createContext(null)
@@ -119,6 +121,10 @@ export function StoreProvider({ children }) {
         update((s) => ({ settings: { ...s.settings, profile: { ...s.settings.profile, ...patch } } }))
       },
 
+      setLanguage(lang) {
+        update((s) => ({ settings: { ...s.settings, language: lang } }))
+      },
+
       resetAll() {
         setState(resetState())
       },
@@ -130,7 +136,10 @@ export function StoreProvider({ children }) {
     const tagMap = Object.fromEntries(state.tags.map((t) => [t.id, t]))
     const activeBudget =
       state.budgets.find((b) => b.id === state.settings.activeBudgetId) || state.budgets[0]
-    return { state, ...actions, categoryMap, tagMap, activeBudget }
+    const lang = state.settings.language || 'cs'
+    setLocale(lang) // synchronizace formátování (měsíce, data, částky)
+    const t = makeT(lang)
+    return { state, ...actions, categoryMap, tagMap, activeBudget, lang, t }
   }, [state, actions])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

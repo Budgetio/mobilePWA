@@ -5,8 +5,8 @@ import Transactions from './screens/Transactions.jsx'
 import Overview from './screens/Overview.jsx'
 import Statistics from './screens/Statistics.jsx'
 import Categories from './screens/Categories.jsx'
+import Profile from './screens/Profile.jsx'
 import AddTransaction from './screens/AddTransaction.jsx'
-import Placeholder from './screens/Placeholder.jsx'
 import { useStore } from './store/StoreProvider.jsx'
 import { monthPeriod } from './lib/period.js'
 
@@ -32,7 +32,7 @@ export default function App() {
     screen = <Transactions period={period} setPeriod={setPeriod} onEdit={openEdit} />
   else if (tab === 'stats')
     screen = <Statistics period={period} setPeriod={setPeriod} onOpenCategories={() => setCatOpen(true)} />
-  else screen = <Placeholder title="Profil" note="Profil a štítky přijdou ve fázi 3." />
+  else screen = <Profile onOpenCategories={() => setCatOpen(true)} />
 
   return (
     <AppShell

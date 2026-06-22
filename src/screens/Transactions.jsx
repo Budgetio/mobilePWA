@@ -3,40 +3,63 @@ import { Search, SlidersHorizontal, Inbox } from 'lucide-react'
 import { useStore } from '../store/StoreProvider.jsx'
 import { transactionsInRange, totals } from '../lib/recurrence.js'
 import { periodRange } from '../lib/period.js'
-import { categoryById } from '../lib/categories.js'
+import { categoryById, categoryWithDescendants } from '../lib/categories.js'
 import { formatMoney } from '../lib/format.js'
-import { ScreenHeader, Segmented, EmptyState } from '../components/ui.jsx'
+import { ScreenHeader, EmptyState } from '../components/ui.jsx'
 import PeriodNav from '../components/PeriodNav.jsx'
 import TransactionRow from '../components/TransactionRow.jsx'
-import Dropdown from '../components/Dropdown.jsx'
+import Filters from './Filters.jsx'
+import { defaultFilters, activeFilterCount } from '../lib/filters.js'
+
+function pluralTx(n) {
+  if (n === 1) return 'transakce'
+  if (n >= 2 && n <= 4) return 'transakce'
+  return 'transakcí'
+}
 
 export default function Transactions({ period, setPeriod, onEdit }) {
-  const { state, categoryMap, activeBudget, setActiveBudget } = useStore()
+  const { state, categoryMap } = useStore()
   const [query, setQuery] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [typeFilter, setTypeFilter] = useState('all')
+  const [filters, setFilters] = useState(() => defaultFilters(state.budgets))
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
-  const monthOcc = useMemo(() => {
+  const rangeOcc = useMemo(() => {
     const { from, to } = periodRange(period)
-    return transactionsInRange(state.transactions, activeBudget.id, from, to)
-  }, [state.transactions, activeBudget.id, period])
+    return transactionsInRange(state.transactions, filters.budgetIds, from, to)
+  }, [state.transactions, filters.budgetIds, period])
 
-  const sums = useMemo(() => totals(monthOcc), [monthOcc])
+  // shoda kategorie (vč. podkategorií)
+  const catSet = useMemo(
+    () => (filters.categoryId !== 'all' ? categoryWithDescendants(state.categories, filters.categoryId) : null),
+    [filters.categoryId, state.categories]
+  )
 
-  const filtered = useMemo(() => {
+  // filtry mimo "typ" – pro souhrnné karty
+  const scopeOcc = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return monthOcc.filter((o) => {
-      if (typeFilter !== 'all' && o.type !== typeFilter) return false
-      if (!q) return true
-      const cat = categoryById(categoryMap, o.categoryId)
-      return (
-        o.name.toLowerCase().includes(q) ||
-        (cat && cat.name.toLowerCase().includes(q))
-      )
+    const min = filters.min ? Number(String(filters.min).replace(',', '.')) : null
+    const max = filters.max ? Number(String(filters.max).replace(',', '.')) : null
+    return rangeOcc.filter((o) => {
+      if (catSet && !catSet.has(o.categoryId)) return false
+      if (filters.recurrence === 'recurring' && !o.isRecurringInstance) return false
+      if (filters.recurrence === 'oneoff' && o.isRecurringInstance) return false
+      if (min != null && o.amount < min) return false
+      if (max != null && o.amount > max) return false
+      if (q) {
+        const cat = categoryById(categoryMap, o.categoryId)
+        if (!o.name.toLowerCase().includes(q) && !(cat && cat.name.toLowerCase().includes(q))) return false
+      }
+      return true
     })
-  }, [monthOcc, query, typeFilter, categoryMap])
+  }, [rangeOcc, query, filters, catSet, categoryMap])
 
-  const budgetOptions = state.budgets.map((b) => ({ value: b.id, label: b.name }))
+  const filtered = useMemo(
+    () => scopeOcc.filter((o) => filters.type === 'all' || o.type === filters.type),
+    [scopeOcc, filters.type]
+  )
+
+  const sums = useMemo(() => totals(scopeOcc), [scopeOcc])
+  const fCount = activeFilterCount(filters, state.budgets)
 
   return (
     <div className="px-5">
@@ -44,26 +67,19 @@ export default function Transactions({ period, setPeriod, onEdit }) {
         title="Transakce"
         right={
           <button
-            onClick={() => setShowFilters((s) => !s)}
-            className={
-              'w-10 h-10 rounded-xl flex items-center justify-center ' +
-              (showFilters ? 'bg-accent text-accent-ink' : 'text-ink-soft')
-            }
+            onClick={() => setFiltersOpen(true)}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-ink-soft relative"
             aria-label="Filtry"
           >
             <SlidersHorizontal size={22} />
+            {fCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-accent text-accent-ink text-[10px] font-bold flex items-center justify-center">
+                {fCount}
+              </span>
+            )}
           </button>
         }
       />
-
-      {/* Přepínač rozpočtu */}
-      <div className="mb-3">
-        <Dropdown
-          value={activeBudget.id}
-          options={budgetOptions}
-          onChange={setActiveBudget}
-        />
-      </div>
 
       {/* Souhrnné karty */}
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -89,35 +105,24 @@ export default function Transactions({ period, setPeriod, onEdit }) {
           />
         </div>
         <button
-          onClick={() => setShowFilters((s) => !s)}
-          className="h-12 px-4 rounded-2xl bg-accent text-accent-ink font-semibold flex items-center gap-2"
+          onClick={() => setFiltersOpen(true)}
+          className="h-12 px-4 rounded-2xl bg-accent text-accent-ink font-semibold flex items-center gap-2 relative"
         >
           <SlidersHorizontal size={18} /> Filtry
+          {fCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-accent-ink text-accent text-[11px] font-bold flex items-center justify-center">
+              {fCount}
+            </span>
+          )}
         </button>
       </div>
-
-      {showFilters && (
-        <div className="mb-3">
-          <Segmented
-            value={typeFilter}
-            onChange={setTypeFilter}
-            options={[
-              { value: 'all', label: 'Vše' },
-              { value: 'income', label: 'Příjmy' },
-              { value: 'expense', label: 'Výdaje' },
-            ]}
-          />
-          <p className="text-xs text-ink-mute mt-2">Pokročilé filtry přibudou ve fázi 3.</p>
-        </div>
-      )}
 
       {/* Období */}
       <div className="mb-2">
         <PeriodNav period={period} onChange={setPeriod} variant="arrowsOutside" />
       </div>
       <div className="text-right text-sm text-ink-mute mb-3">
-        {filtered.length}{' '}
-        {filtered.length === 1 ? 'transakce' : filtered.length >= 2 && filtered.length <= 4 ? 'transakce' : 'transakcí'}
+        {filtered.length} {pluralTx(filtered.length)}
       </div>
 
       {/* Seznam */}
@@ -125,7 +130,7 @@ export default function Transactions({ period, setPeriod, onEdit }) {
         <EmptyState
           icon={<Inbox size={22} />}
           title="Žádné transakce"
-          subtitle="Přidejte první transakci tlačítkem +"
+          subtitle="Zkuste upravit filtry nebo přidat transakci tlačítkem +"
         />
       ) : (
         <div className="space-y-2.5">
@@ -138,6 +143,16 @@ export default function Transactions({ period, setPeriod, onEdit }) {
             />
           ))}
         </div>
+      )}
+
+      {filtersOpen && (
+        <Filters
+          filters={filters}
+          budgets={state.budgets}
+          categories={state.categories}
+          onApply={setFilters}
+          onClose={() => setFiltersOpen(false)}
+        />
       )}
     </div>
   )

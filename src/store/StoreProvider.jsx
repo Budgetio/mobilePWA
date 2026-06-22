@@ -45,9 +45,27 @@ export function StoreProvider({ children }) {
       },
 
       addTag(name) {
-        const tag = { id: uid('tag'), name }
+        const tag = { id: uid('tag'), name: name.trim() }
         update((s) => ({ tags: [...s.tags, tag] }))
         return tag
+      },
+
+      renameTag(id, name) {
+        update((s) => ({ tags: s.tags.map((t) => (t.id === id ? { ...t, name: name.trim() } : t)) }))
+      },
+
+      deleteTag(id) {
+        update((s) => ({
+          tags: s.tags.filter((t) => t.id !== id),
+          transactions: s.transactions.map((t) =>
+            t.tagIds?.includes(id) ? { ...t, tagIds: t.tagIds.filter((x) => x !== id) } : t
+          ),
+        }))
+      },
+
+      // Nahrazení celého stavu (import zálohy).
+      importState(next) {
+        setState(() => next)
       },
 
       addCategory({ name, parentId = null, kind }) {

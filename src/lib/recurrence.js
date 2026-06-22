@@ -54,11 +54,18 @@ export function occurrencesInMonth(tx, year, month, today = new Date()) {
   return [makeOccurrence(tx, toISO(occDate), today)]
 }
 
+// budgetId může být řetězec (jeden rozpočet), pole (více) nebo null (všechny).
+export function budgetMatches(txBudget, budgetId) {
+  if (budgetId == null) return true
+  if (Array.isArray(budgetId)) return budgetId.includes(txBudget)
+  return txBudget === budgetId
+}
+
 // Všechny instance transakcí daného rozpočtu v měsíci, seřazené od nejnovější.
 export function transactionsForMonth(transactions, budgetId, year, month, today = new Date()) {
   const out = []
   for (const tx of transactions) {
-    if (tx.budgetId !== budgetId) continue
+    if (!budgetMatches(tx.budgetId, budgetId)) continue
     for (const occ of occurrencesInMonth(tx, year, month, today)) out.push(occ)
   }
   out.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
@@ -82,7 +89,7 @@ export function transactionsInRange(transactions, budgetId, fromISO, toISO_, tod
   }
 
   for (const tx of transactions) {
-    if (tx.budgetId !== budgetId) continue
+    if (!budgetMatches(tx.budgetId, budgetId)) continue
     if (!tx.recurrence) {
       const d = parseISO(tx.date)
       if (d >= from && d <= to) out.push(makeOccurrence(tx, tx.date, today))

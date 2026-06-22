@@ -21,7 +21,16 @@ npm run preview      # náhled produkčního buildu
 > Produkční `dist/` se musí servírovat přes HTTP (ne otevírat přes `file://`).
 > Pro rychlé otevření bez serveru použij `BUDGETO-nahled.html`.
 
-## Co je hotové (Fáze 1 + 2)
+## Instalace na telefon / plochu (PWA)
+
+Produkční build (`dist/`) je plnohodnotná PWA – funguje offline a jde nainstalovat:
+
+1. `npm run build` a obsah `dist/` nahraj na libovolný statický hosting (přes **HTTPS**), nebo lokálně spusť `npm run preview`.
+2. V prohlížeči otevři adresu → v menu zvol „Instalovat aplikaci" / na iOSu Safari → Sdílet → „Přidat na plochu". (Tlačítko „Instalovat aplikaci" je i v Profilu, když je dostupné.)
+
+> Service worker a instalace fungují jen přes http(s), ne přes `file://`. Pro rychlý náhled bez serveru slouží `BUDGETO-nahled.html`.
+
+## Co je hotové (Fáze 1–3)
 
 - **Datová vrstva + localStorage** — rozpočty, hierarchické kategorie, štítky, transakce; data přežijí zavření appky.
 - **Více rozpočtů** — Osobní / Rodinný / Firemní, přepínání v hlavičce.
@@ -30,12 +39,11 @@ npm run preview      # náhled produkčního buildu
 - **Přidat / upravit transakci** — Výdaj/Příjem, částka, datum, kategorie, štítky, poznámka a **opakování** (měsíčně se začátkem/koncem). Mazání transakcí.
 - **Přehled** — zůstatek/příjmy/výdaje, graf peněžního toku, plánované výdaje, týdenní změny a dva koláčové grafy (výdaje/příjmy dle kategorie).
 - **Statistiky** — výdaje dle kategorie (proužky), Příjmy vs Výdaje za 6 měsíců, měsíční přehled s úsporami a mírou úspor.
-- **Kategorie** — správa stromu: rozbalování, vyhledávání, přidání kategorie i **podkategorie** (dialog), přejmenování a mazání (včetně podstromu). Dostupné přes ozubené kolo ve Statistikách nebo „Spravovat" u kategorie v Přidat transakci.
+- **Kategorie** — správa stromu: rozbalování, vyhledávání, přidání kategorie i **podkategorie** (dialog), přejmenování a mazání (včetně podstromu). Dostupné přes ozubené kolo ve Statistikách/Profilu nebo „Spravovat" u kategorie v Přidat transakci.
+- **Filtry** — kategorie (vč. podkategorií), výběr rozpočtů (Vybrat vše), typ, opakování, rozsah částky; počet aktivních filtrů se ukazuje na tlačítku.
+- **Profil** — úprava jména/e-mailu, jazyk, **záloha dat (export/import JSON)**, správa štítků (přidat/přejmenovat/smazat), reset dat na výchozí, instalace aplikace.
+- **PWA** — offline provoz (service worker), instalace na plochu, ikony a manifest.
 - Demo data se generují relativně k dnešnímu dni, aby grafy i plánované položky dávaly smysl.
-
-## Co přijde dál
-
-- **Fáze 3** — pokročilé Filtry, Profil (štítky, reset dat), doladění PWA (offline, instalace na plochu, ikony) a doporučený JSON export/import zálohy.
 
 ## Struktura
 

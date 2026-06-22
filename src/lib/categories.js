@@ -60,3 +60,34 @@ export function rootCategory(map, id) {
 export function categoryById(map, id) {
   return map[id] || null
 }
+
+// Množina id dané kategorie a všech jejích podkategorií (pro filtrování).
+export function categoryWithDescendants(list, id) {
+  const set = new Set([id])
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const c of list) {
+      if (c.parentId && set.has(c.parentId) && !set.has(c.id)) {
+        set.add(c.id)
+        grew = true
+      }
+    }
+  }
+  return set
+}
+
+// Ploché možnosti všech kategorií (oba druhy) s odsazením – pro select ve filtrech.
+export function flatCategoryOptions(list) {
+  const byParent = {}
+  for (const c of list) (byParent[c.parentId || 'root'] ||= []).push(c)
+  const out = []
+  const walk = (parent, depth) => {
+    for (const c of byParent[parent] || []) {
+      out.push({ value: c.id, label: `${'  '.repeat(depth)}${c.name}` })
+      walk(c.id, depth + 1)
+    }
+  }
+  walk('root', 0)
+  return out
+}
